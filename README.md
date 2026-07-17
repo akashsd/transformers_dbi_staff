@@ -1,6 +1,6 @@
 # DBI Transformers Demo
 
-Interactive follow-along material for the DBI transformers show-and-tell: a browser demo, three Colab notebooks, and the slide deck cue badges.
+Interactive follow-along material for the DBI Staff transformers session: a browser demo, three Colab notebooks, and the slide deck cue badges.
 
 ## Open the webapp
 
@@ -14,11 +14,18 @@ Interactive follow-along material for the DBI transformers show-and-tell: a brow
 
 ## What is this?
 
-These materials support the DBI extended-team transformers show-and-tell. The webapp is for live Zoom interaction, and the notebooks are the follow-on path for people who want to try the ideas themselves. Everything here is synthetic or public data only.
+These materials support the DBI Staff transformers session. The webapp is for live Zoom interaction, and the notebooks are the follow-on path for people who want to try the ideas themselves. Everything here is synthetic or public data only.
 
 ## During the Zoom
 
-The webapp has two panels. Use the **Tokenizer** panel to show that models see tokens, not words — it runs instantly with no model download. Use the **Semantic Search** panel to show meaning-based retrieval over a synthetic corpus: search for an idea and watch it find documents that share none of your words, side by side with plain keyword search. Corpus embeddings are precomputed, so the only live model is a tiny 25 MB one that loads on your first search. Use the notebook links after the demo if people want to keep going.
+The webapp has four panels, and the page opens instantly — nothing downloads a model on load.
+
+- **Tokenizer** (live, pure JavaScript): type anything and watch it split into tokens in real time.
+- **Attention**: an illustrative schematic showing how a word like "she" ties back to "officer." Click a word to see where it looks. Preset sentences only — no live model.
+- **Semantic Search** (the star): search a synthetic corpus by meaning and watch it beat plain keyword search on paraphrased queries. Corpus embeddings are precomputed; only your typed query runs a tiny 25 MB model, loaded on your first search.
+- **Next Token**: real GPT-2 predictions, captured once and frozen, including a confidently-wrong hallucination (the Dallas Cowboys Super Bowl year). Preset prompts only.
+
+Only Semantic Search ever downloads a model, and only when you press Search. Use the notebook links after the demo if people want to keep going.
 
 ## After the Zoom
 

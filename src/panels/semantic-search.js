@@ -116,7 +116,7 @@ export function renderSemanticSearchPanel(root) {
   root.innerHTML = `
     <div class="panel-head">
       <div>
-        <span class="tag">Panel 2</span>
+        <span class="tag">Panel 3</span>
         <h2>Semantic Search</h2>
         <p class="lead">Meaning beats keywords. Search for an <em>idea</em> and watch it find docs that share none of your words.</p>
       </div>

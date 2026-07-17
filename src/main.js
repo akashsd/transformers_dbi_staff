@@ -1,7 +1,9 @@
 import './env.js';
 import './styles.css';
 import { renderTokenizerPanel } from './panels/tokenizer.js';
+import { renderAttentionPanel } from './panels/attention.js';
 import { renderSemanticSearchPanel } from './panels/semantic-search.js';
+import { renderNextTokenPanel } from './panels/next-token.js';
 
 const app = document.querySelector('#app');
 const currentUrl = new URL(window.location.href);
@@ -9,7 +11,9 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matc
 
 const panels = [
   { id: 'tokenizer', label: 'Tokenizer', render: renderTokenizerPanel },
+  { id: 'attention', label: 'Attention', render: renderAttentionPanel },
   { id: 'semantic-search', label: 'Semantic Search', render: renderSemanticSearchPanel },
+  { id: 'next-token', label: 'Next Token', render: renderNextTokenPanel },
 ];
 
 app.innerHTML = `
@@ -17,7 +21,7 @@ app.innerHTML = `
   <div class="shell">
     <header class="masthead">
       <div class="masthead-main">
-        <span class="tag">DBI transformers show-and-tell</span>
+        <span class="tag">DBI Staff</span>
         <h1>Transformers, <span class="accent">but you can poke them.</span></h1>
         <p class="sub">A browser-only demo — no server, no sign-in. Keep it open in a tab during the Zoom and jump in when the slide cues you.</p>
       </div>
@@ -42,7 +46,7 @@ app.innerHTML = `
         .join('')}
     </main>
     <footer class="foot">
-      <span>Built for DBI's transformers show-and-tell · synthetic data only</span>
+      <span>Built for DBI Staff · synthetic data only</span>
       <a href="https://github.com/akashsd/transformers_dbi_staff" target="_blank" rel="noreferrer">GitHub repo ↗</a>
     </footer>
   </div>
