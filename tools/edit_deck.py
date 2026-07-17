@@ -27,12 +27,12 @@ BADGES = {
 NOTES = {
     1: "Before we start - chat waterfall. Type one word for what you hope to leave with today, but DON'T send yet. Three, two, one - send.",
     2: "Open the webapp - Tokenizer panel. Guess how many tokens 'strawberry' is. Put your guess in chat, then check. I'll wait.",
-    3: "Drop a sentence in chat with a pronoun in it. I'll pick two and run them through the attention viz live.",
+    3: "Open the webapp - Attention panel. Click 'she' and watch the lines fan out; the thickest one lands on 'officer'. Two preset sentences - try the ambiguous 'it' one too. Have people drop a pronoun sentence in chat and we'll reason through where it should point.",
     4: "Zoom poll launching now - which of these is a transformer? Multi-select. Take 15 seconds.",
     5: "Zoom poll: for a chatbot, which flavor? Vote before I reveal.",
     6: "Chat drop: one thing you'd want to try at DBI with this. Don't overthink it. I'll read a few aloud.",
     7: "This is the main event. Everyone in the Semantic Search panel? Good. Watch me run this first, then I'll take queries from chat. Bonus points if your query doesn't share a single word with the docs you want to find.",
-    8: "Open the Next-token panel. Click the preset that says 'Dallas Cowboys.' Watch the model be confidently wrong. This is why we don't ship these unsupervised. Then: 1 in chat if you've hit one of these problems at work, 2 if not yet.",
+    8: "Open the Next-token panel. Click the 'Confidently wrong' preset - the Dallas Cowboys one. Watch it offer recent years with total confidence, every one wrong. This is why we don't ship these unsupervised. Then: 1 in chat if you've hit this at work, 2 if not yet.",
     9: "Reposting the repo link in chat now - three notebooks in there, first one takes ten minutes and gives you a working semantic search over your own CSV.",
 }
 
@@ -104,8 +104,8 @@ def add_title_band(slide):
     p2 = tf.add_paragraph()
     p2.alignment = PP_ALIGN.LEFT
     r2 = p2.add_run()
-    r2.text = "dbi-transformers.pages.dev"
-    r2.font.size = Pt(18)
+    r2.text = "akashsd.github.io/transformers_dbi_staff"
+    r2.font.size = Pt(14)
     r2.font.bold = True
     r2.font.color.rgb = LIGHT
 
