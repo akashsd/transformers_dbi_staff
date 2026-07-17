@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/dbi-transformers-demo/',
+  base: '/transformers_dbi_staff/',
   build: {
     outDir: 'docs',
     emptyOutDir: true,
