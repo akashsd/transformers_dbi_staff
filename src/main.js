@@ -1,5 +1,6 @@
 import './env.js';
 import './styles.css';
+import { initFx } from './fx.js';
 import { renderTokenizerPanel } from './panels/tokenizer.js';
 import { renderAttentionPanel } from './panels/attention.js';
 import { renderSemanticSearchPanel } from './panels/semantic-search.js';
@@ -17,13 +18,18 @@ const panels = [
 ];
 
 app.innerHTML = `
-  <div class="bg" aria-hidden="true"></div>
+  <div class="bg" aria-hidden="true">
+    <div class="bg-aurora"></div>
+    <div class="bg-grid"></div>
+    <div class="bg-grain"></div>
+    <div class="bg-spot" data-spot></div>
+  </div>
   <div class="shell">
     <header class="masthead">
       <div class="masthead-main">
         <span class="tag">DBI Staff</span>
         <h1>Transformers, <span class="accent">but you can poke them.</span></h1>
-        <p class="sub">A browser-only demo — no server, no sign-in. Keep it open in a tab during the Zoom and jump in when the slide cues you.</p>
+        <p class="sub">A browser-only demo. Keep it open in a tab during the meeting and jump in when the slide cues you.</p>
       </div>
     </header>
     <nav class="tabs" role="tablist" aria-label="Panels">
@@ -103,3 +109,6 @@ window.addEventListener('resize', () => movePill(tabs.find((tab) => tab.classLis
 
 const initial = currentUrl.hash.slice(1) || (currentUrl.searchParams.has('q') ? 'semantic-search' : panels[0].id);
 apply(sections.has(initial) ? initial : panels[0].id);
+
+initFx();
+requestAnimationFrame(() => document.body.classList.add('is-ready'));
