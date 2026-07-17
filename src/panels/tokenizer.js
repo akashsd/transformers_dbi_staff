@@ -92,5 +92,5 @@ export function renderTokenizerPanel(root) {
     });
   });
 
-  update();
+  return { activate: update };
 }

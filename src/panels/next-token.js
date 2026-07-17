@@ -143,5 +143,6 @@ export function renderNextTokenPanel(root) {
   });
 
   runButton.addEventListener('click', run);
-  run();
+
+  return { activate: run };
 }

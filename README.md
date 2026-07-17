@@ -23,7 +23,3 @@ Use the tokenizer panel to show that models see tokens, not words. Use the seman
 ## After the Zoom
 
 Notebook 1 introduces embeddings and cosine similarity. Notebook 2 builds semantic search over the shared toy corpus. Notebook 3 shows how to bring your own CSV into an embedding workflow.
-
-## Credits
-
-Built for DBI's transformers show-and-tell. Slide deck: [Transformers_DBI_Staff.pptx](Transformers_DBI_Staff.pptx).

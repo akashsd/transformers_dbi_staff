@@ -243,5 +243,5 @@ export function renderAttentionPanel(root) {
     }
   });
 
-  loadAndRender();
+  return { activate: loadAndRender };
 }
