@@ -102,16 +102,21 @@ a { color: var(--blue); }
   padding: 16px 0 28px;
 }
 
-.hero {
+.sticky-header {
   position: sticky;
   top: 0;
   z-index: 10;
+  display: grid;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.hero {
   display: grid;
   gap: 16px;
   grid-template-columns: minmax(0, 1.8fr) minmax(260px, 0.9fr);
   align-items: start;
   padding: 20px 22px 18px;
-  margin-bottom: 18px;
   backdrop-filter: blur(16px) saturate(140%);
   background: rgba(0, 27, 59, 0.7);
   border: 1px solid var(--line);
@@ -188,15 +193,11 @@ h1 {
 }
 
 .panel-nav {
-  position: sticky;
-  top: 132px;
-  z-index: 9;
   position: relative;
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
   padding: 8px;
-  margin: 0 0 18px;
   border-radius: 20px;
   border: 1px solid var(--line);
   background: rgba(0, 27, 59, 0.72);
@@ -604,10 +605,5 @@ button.token-chip:hover {
 
   .page-shell { width: min(100vw - 16px, 1180px); }
 
-  .hero { position: static; }
-
-  .panel-nav {
-    top: 0;
-    position: static;
-  }
+  .sticky-header { position: static; }
 }

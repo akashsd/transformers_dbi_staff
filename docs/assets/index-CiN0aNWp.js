@@ -3076,25 +3076,27 @@ Shelter transport coordinated for two cats found near an office complex at dusk.
     <span class="aurora-blob aurora-orange"></span>
   </div>
   <div class="page-shell">
-    <header class="hero">
-      <div>
-        <p class="eyebrow">Built for DBI's transformers show-and-tell</p>
-        <h1>Transformers, but <span class="gradient-text">interactive.</span></h1>
-        <p class="hero-copy">A browser-only demo for tokenizer boundaries, attention, semantic search, and next-token prediction.</p>
-      </div>
-      <div class="hero-note">
-        <strong>How to use in Zoom</strong>
-        <p>Open the page early, keep it in a tab, and jump between panels live when the slide deck cues you.</p>
-        <button type="button" class="secondary preload-btn" data-preload>Preload all models</button>
-      </div>
-    </header>
-    <nav class="panel-nav" aria-label="Panel navigation">
-      <span class="panel-nav-indicator" data-nav-indicator aria-hidden="true"></span>
-      ${cn.map((e,r)=>`<button type="button" class="panel-nav-btn" data-panel-nav="${e.id}" data-index="${r}">
-              <span class="panel-nav-icon" aria-hidden="true">${e.icon}</span>
-              <span>Panel ${r+1}: ${e.label}</span>
-            </button>`).join("")}
-    </nav>
+    <div class="sticky-header">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Built for DBI's transformers show-and-tell</p>
+          <h1>Transformers, but <span class="gradient-text">interactive.</span></h1>
+          <p class="hero-copy">A browser-only demo for tokenizer boundaries, attention, semantic search, and next-token prediction.</p>
+        </div>
+        <div class="hero-note">
+          <strong>How to use in Zoom</strong>
+          <p>Open the page early, keep it in a tab, and jump between panels live when the slide deck cues you.</p>
+          <button type="button" class="secondary preload-btn" data-preload>Preload all models</button>
+        </div>
+      </header>
+      <nav class="panel-nav" aria-label="Panel navigation">
+        <span class="panel-nav-indicator" data-nav-indicator aria-hidden="true"></span>
+        ${cn.map((e,r)=>`<button type="button" class="panel-nav-btn" data-panel-nav="${e.id}" data-index="${r}">
+                <span class="panel-nav-icon" aria-hidden="true">${e.icon}</span>
+                <span>Panel ${r+1}: ${e.label}</span>
+              </button>`).join("")}
+      </nav>
+    </div>
     <main class="panels">
       ${cn.map(e=>`<section class="panel" id="panel-${e.id}"></section>`).join("")}
     </main>

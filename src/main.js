@@ -23,30 +23,32 @@ app.innerHTML = `
     <span class="aurora-blob aurora-orange"></span>
   </div>
   <div class="page-shell">
-    <header class="hero">
-      <div>
-        <p class="eyebrow">Built for DBI's transformers show-and-tell</p>
-        <h1>Transformers, but <span class="gradient-text">interactive.</span></h1>
-        <p class="hero-copy">A browser-only demo for tokenizer boundaries, attention, semantic search, and next-token prediction.</p>
-      </div>
-      <div class="hero-note">
-        <strong>How to use in Zoom</strong>
-        <p>Open the page early, keep it in a tab, and jump between panels live when the slide deck cues you.</p>
-        <button type="button" class="secondary preload-btn" data-preload>Preload all models</button>
-      </div>
-    </header>
-    <nav class="panel-nav" aria-label="Panel navigation">
-      <span class="panel-nav-indicator" data-nav-indicator aria-hidden="true"></span>
-      ${panels
-        .map(
-          (panel, index) =>
-            `<button type="button" class="panel-nav-btn" data-panel-nav="${panel.id}" data-index="${index}">
-              <span class="panel-nav-icon" aria-hidden="true">${panel.icon}</span>
-              <span>Panel ${index + 1}: ${panel.label}</span>
-            </button>`,
-        )
-        .join('')}
-    </nav>
+    <div class="sticky-header">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Built for DBI's transformers show-and-tell</p>
+          <h1>Transformers, but <span class="gradient-text">interactive.</span></h1>
+          <p class="hero-copy">A browser-only demo for tokenizer boundaries, attention, semantic search, and next-token prediction.</p>
+        </div>
+        <div class="hero-note">
+          <strong>How to use in Zoom</strong>
+          <p>Open the page early, keep it in a tab, and jump between panels live when the slide deck cues you.</p>
+          <button type="button" class="secondary preload-btn" data-preload>Preload all models</button>
+        </div>
+      </header>
+      <nav class="panel-nav" aria-label="Panel navigation">
+        <span class="panel-nav-indicator" data-nav-indicator aria-hidden="true"></span>
+        ${panels
+          .map(
+            (panel, index) =>
+              `<button type="button" class="panel-nav-btn" data-panel-nav="${panel.id}" data-index="${index}">
+                <span class="panel-nav-icon" aria-hidden="true">${panel.icon}</span>
+                <span>Panel ${index + 1}: ${panel.label}</span>
+              </button>`,
+          )
+          .join('')}
+      </nav>
+    </div>
     <main class="panels">
       ${panels.map((panel) => `<section class="panel" id="panel-${panel.id}"></section>`).join('')}
     </main>
