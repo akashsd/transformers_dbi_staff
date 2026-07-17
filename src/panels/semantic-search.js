@@ -1,24 +1,19 @@
 import { pipeline } from '@huggingface/transformers';
 import { corpus } from '../corpus.js';
+import embeddings from '../corpus-embeddings.json';
 
 const MODEL_ID = 'Xenova/all-MiniLM-L6-v2';
+const DTYPE = 'q8'; // must match the dtype used to precompute embeddings
+const DEFAULT_QUERY = 'traffic stop near downtown';
+
+const docVectors = embeddings.vectors;
 let extractorPromise;
-let docVectorsPromise;
 
-function formatProgress(progress) {
-  const value = Number(progress?.progress ?? 0);
-  if (!Number.isFinite(value)) {
-    return 0;
-  }
-  return Math.max(0, Math.min(100, Math.round(value > 1 ? value : value * 100)));
-}
-
-async function getExtractor(onProgress) {
+function getExtractor(onProgress) {
   if (!extractorPromise) {
     extractorPromise = pipeline('feature-extraction', MODEL_ID, {
+      dtype: DTYPE,
       progress_callback: onProgress,
-      dtype: 'q4',
-      quantized: true,
     }).catch((error) => {
       extractorPromise = undefined;
       throw error;
@@ -27,238 +22,198 @@ async function getExtractor(onProgress) {
   return extractorPromise;
 }
 
-async function embedText(extractor, text) {
-  const output = await extractor(text, { pooling: 'mean', normalize: true });
-  return Array.from(output.data);
-}
-
-function cosineSimilarity(a, b) {
-  let dot = 0;
-  let normA = 0;
-  let normB = 0;
-  for (let index = 0; index < a.length; index += 1) {
-    const left = a[index];
-    const right = b[index];
-    dot += left * right;
-    normA += left * left;
-    normB += right * right;
+function dot(a, b) {
+  let sum = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    sum += a[i] * b[i];
   }
-  return dot / (Math.sqrt(normA) * Math.sqrt(normB) || 1);
+  return sum;
 }
 
-function keywordScore(queryTerms, documentText) {
-  const lowerDocument = documentText.toLowerCase();
-  let matches = 0;
-  for (const term of queryTerms) {
-    if (lowerDocument.includes(term)) {
-      matches += 1;
-    }
-  }
-  return matches / (queryTerms.length || 1);
-}
-
-function tokenizeQuery(query) {
-  return query
+function tokenize(text) {
+  return text
     .toLowerCase()
     .split(/[^a-z0-9]+/)
-    .map((part) => part.trim())
     .filter(Boolean);
 }
 
-async function getCorpusVectors(setStatus) {
-  if (!docVectorsPromise) {
-    docVectorsPromise = (async () => {
-      const extractor = await getExtractor((progress) => {
-        if (progress?.status === 'progress') {
-          setStatus(`Downloading embedding model... ${formatProgress(progress)}%`);
-        }
-      });
+function keywordScore(terms, text) {
+  if (terms.length === 0) {
+    return 0;
+  }
+  const lower = text.toLowerCase();
+  let hits = 0;
+  for (const term of terms) {
+    if (lower.includes(term)) {
+      hits += 1;
+    }
+  }
+  return hits / terms.length;
+}
 
-      const vectors = [];
-      for (let index = 0; index < corpus.length; index += 1) {
-        setStatus(`Embedding corpus ${index + 1} of ${corpus.length}...`);
-        vectors.push(await embedText(extractor, corpus[index]));
+function highlight(text, terms) {
+  const frag = document.createDocumentFragment();
+  if (terms.length === 0) {
+    frag.append(text);
+    return frag;
+  }
+  const pattern = new RegExp(`(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+  let last = 0;
+  for (const match of text.matchAll(pattern)) {
+    const start = match.index;
+    if (start > last) {
+      frag.append(text.slice(last, start));
+    }
+    const mark = document.createElement('mark');
+    mark.textContent = match[0];
+    frag.append(mark);
+    last = start + match[0].length;
+  }
+  if (last < text.length) {
+    frag.append(text.slice(last));
+  }
+  return frag;
+}
+
+function renderResults(root, items, terms, { showBar }) {
+  root.replaceChildren(
+    ...items.map((item, rank) => {
+      const row = document.createElement('div');
+      row.className = 'result';
+      const head = document.createElement('div');
+      head.className = 'result-head';
+      const num = document.createElement('span');
+      num.className = 'result-rank';
+      num.textContent = String(rank + 1);
+      const score = document.createElement('span');
+      score.className = 'result-score';
+      score.textContent = item.score.toFixed(2);
+      head.append(num, score);
+      const body = document.createElement('p');
+      body.className = 'result-text';
+      body.append(highlight(item.text, terms));
+      row.append(head, body);
+      if (showBar) {
+        const bar = document.createElement('span');
+        bar.className = 'result-bar';
+        bar.style.setProperty('--v', `${Math.max(0, Math.min(1, item.score)) * 100}%`);
+        row.append(bar);
       }
-      return vectors;
-    })().catch((error) => {
-      docVectorsPromise = undefined;
-      throw error;
-    });
-  }
-  return docVectorsPromise;
+      return row;
+    }),
+  );
 }
 
-function buildResultCard(title, items) {
-  const card = document.createElement('div');
-  card.className = 'card';
-  const heading = document.createElement('h3');
-  heading.textContent = title;
-  const list = document.createElement('div');
-  list.className = 'result-list';
-
-  for (const item of items) {
-    const row = document.createElement('div');
-    row.className = 'result-item';
-    const strong = document.createElement('strong');
-    strong.textContent = item.title;
-    const small = document.createElement('small');
-    small.textContent = item.score.toFixed(3);
-    const paragraph = document.createElement('p');
-    paragraph.textContent = item.text;
-    row.append(strong, small, paragraph);
-    list.appendChild(row);
-  }
-
-  card.append(heading, list);
-  return card;
-}
-
-function parseQueryFromUrl() {
-  return new URL(window.location.href).searchParams.get('q') || 'traffic stop near downtown';
-}
-
-function updateUrl(query) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('q', query);
-  window.history.replaceState({}, '', url);
-}
-
-function renderCorpus(root) {
-  root.innerHTML = '';
-  for (let index = 0; index < corpus.length; index += 1) {
-    const row = document.createElement('div');
-    row.className = 'result-item';
-    const strong = document.createElement('strong');
-    strong.textContent = `Doc ${index + 1}`;
-    const paragraph = document.createElement('p');
-    paragraph.textContent = corpus[index];
-    row.append(strong, paragraph);
-    root.appendChild(row);
-  }
-}
-
-function buildCorpusCard() {
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
-    <details class="corpus-details">
-      <summary>
-        <span>Corpus</span>
-        <span class="corpus-count">${corpus.length} synthetic service records &middot; click to browse</span>
-      </summary>
-      <p>Shared with Notebook 2. Scroll inside the list below &mdash; the page won't grow.</p>
-      <div class="corpus-scroll">
-        <div data-corpus class="result-list"></div>
-      </div>
-    </details>
-  `;
-  return card;
+function topK(scored, key, k = 5) {
+  return [...scored]
+    .sort((a, b) => b[key] - a[key])
+    .slice(0, k)
+    .map((item) => ({ text: item.text, score: item[key] }));
 }
 
 export function renderSemanticSearchPanel(root) {
-  const defaultQuery = parseQueryFromUrl();
+  const urlQuery = new URL(window.location.href).searchParams.get('q');
   root.innerHTML = `
     <div class="panel-head">
       <div>
-        <p class="eyebrow">Panel 3</p>
+        <span class="tag">Panel 2</span>
         <h2>Semantic Search</h2>
-        <p>Meaning-based search beats keyword search when the query and the docs use different words.</p>
+        <p class="lead">Meaning beats keywords. Search for an <em>idea</em> and watch it find docs that share none of your words.</p>
       </div>
-      <div class="status" data-status>Loading is deferred until you search.</div>
     </div>
-    <div class="panel-grid semantic-layout">
-      <div class="card controls">
-        <label>
-          Query
-          <input type="text" data-query />
-        </label>
-        <div class="button-row">
-          <button data-run>Run search</button>
-          <button class="secondary" data-copy>Copy shareable link</button>
+    <div class="stack">
+      <label class="field">
+        <span class="field-label">Search 40 synthetic city service records</span>
+        <div class="field-row">
+          <input type="text" data-query autocomplete="off" spellcheck="false" />
+          <button type="button" data-run>Search</button>
+          <button type="button" class="ghost" data-copy title="Copy a link with this query">Link</button>
         </div>
-        <div class="hint"><strong>Try this:</strong> Try a query that describes an idea using none of the words in the docs.</div>
+      </label>
+      <div class="status" data-status></div>
+      <div class="cols">
+        <div class="col">
+          <div class="col-head"><span class="col-badge keyword">Keyword</span><span class="col-sub">word overlap</span></div>
+          <div data-keyword class="results"></div>
+        </div>
+        <div class="col">
+          <div class="col-head"><span class="col-badge semantic">Semantic</span><span class="col-sub">meaning similarity</span></div>
+          <div data-semantic class="results"></div>
+        </div>
       </div>
-      <div class="two-col">
-        <div data-keyword></div>
-        <div data-semantic></div>
-      </div>
+      <details class="corpus">
+        <summary><span>Browse the 40 documents</span></summary>
+        <div class="corpus-list">
+          ${corpus.map((doc, i) => `<div class="corpus-item"><span>${i + 1}</span>${doc}</div>`).join('')}
+        </div>
+      </details>
+      <p class="hint"><strong>Try this:</strong> describe a situation without using any word that appears in the docs — e.g. "someone took my bike."</p>
     </div>
   `;
 
-  const layout = root.querySelector('.semantic-layout');
-  layout.insertBefore(buildCorpusCard(), layout.querySelector('.two-col'));
-
-  const status = root.querySelector('[data-status]');
   const queryInput = root.querySelector('[data-query]');
   const runButton = root.querySelector('[data-run]');
   const copyButton = root.querySelector('[data-copy]');
-  const corpusTarget = root.querySelector('[data-corpus]');
+  const status = root.querySelector('[data-status]');
   const keywordTarget = root.querySelector('[data-keyword]');
   const semanticTarget = root.querySelector('[data-semantic]');
 
-  queryInput.value = defaultQuery;
-  renderCorpus(corpusTarget);
+  queryInput.value = urlQuery || DEFAULT_QUERY;
 
-  async function runSearch() {
+  function setStatus(text, tone = '') {
+    status.textContent = text;
+    status.dataset.tone = tone;
+  }
+
+  function runKeyword(query) {
+    const terms = tokenize(query);
+    const scored = corpus.map((text) => ({ text, keyword: keywordScore(terms, text) }));
+    renderResults(keywordTarget, topK(scored, 'keyword'), terms, { showBar: false });
+    return terms;
+  }
+
+  async function runSemantic(query, terms) {
+    const extractor = await getExtractor((progress) => {
+      if (progress?.status === 'progress') {
+        const raw = Number(progress.progress) || 0;
+        const pct = Math.max(0, Math.min(100, Math.round(raw > 1 ? raw : raw * 100)));
+        setStatus(`Loading the embedding model (25 MB, once)… ${pct}%`, 'load');
+      }
+    });
+    const output = await extractor(query, { pooling: 'mean', normalize: true });
+    const queryVector = Array.from(output.data);
+    const scored = corpus.map((text, index) => ({ text, semantic: dot(queryVector, docVectors[index]) }));
+    renderResults(semanticTarget, topK(scored, 'semantic'), terms, { showBar: true });
+  }
+
+  async function search() {
     const query = queryInput.value.trim();
     if (!query) {
       return;
     }
 
-    updateUrl(query);
+    const url = new URL(window.location.href);
+    url.searchParams.set('q', query);
+    window.history.replaceState({}, '', url);
+
+    const terms = runKeyword(query); // instant, no model
     runButton.disabled = true;
-    copyButton.disabled = true;
-    status.textContent = 'Loading embedding model and scoring corpus...';
-
+    setStatus('Scoring by meaning…', 'load');
     try {
-      const [docVectors, extractor] = await Promise.all([
-        getCorpusVectors((message) => {
-          status.textContent = message;
-        }),
-        getExtractor((progress) => {
-          if (progress?.status === 'progress') {
-            status.textContent = `Downloading embedding model... ${formatProgress(progress)}%`;
-          }
-        }),
-      ]);
-
-      const queryVector = await embedText(extractor, query);
-      const queryTerms = tokenizeQuery(query);
-      const scored = corpus.map((text, index) => ({
-        text,
-        semantic: cosineSimilarity(queryVector, docVectors[index]),
-        keyword: keywordScore(queryTerms, text),
-      }));
-
-      const semanticResults = scored
-        .map((item, index) => ({ title: `Doc ${index + 1}`, text: item.text, score: item.semantic }))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 5);
-
-      const keywordResults = scored
-        .map((item, index) => ({ title: `Doc ${index + 1}`, text: item.text, score: item.keyword }))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 5);
-
-      keywordTarget.innerHTML = '';
-      semanticTarget.innerHTML = '';
-      keywordTarget.appendChild(buildResultCard('Keyword search', keywordResults));
-      semanticTarget.appendChild(buildResultCard('Semantic search', semanticResults));
-      status.textContent = 'Ready.';
+      await runSemantic(query, terms);
+      setStatus('Ready. Keyword and semantic results are ranked independently.', 'ok');
     } catch (error) {
-      status.textContent = `Model load failed: ${error.message}`;
-      keywordTarget.innerHTML = '';
       semanticTarget.innerHTML = '';
+      setStatus(`Semantic model failed to load: ${error.message}`, 'error');
     } finally {
       runButton.disabled = false;
-      copyButton.disabled = false;
     }
   }
 
-  runButton.addEventListener('click', runSearch);
+  runButton.addEventListener('click', search);
   queryInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
-      runSearch();
+      search();
     }
   });
   copyButton.addEventListener('click', async () => {
@@ -266,11 +221,16 @@ export function renderSemanticSearchPanel(root) {
     url.searchParams.set('q', queryInput.value.trim());
     try {
       await navigator.clipboard.writeText(url.toString());
-      status.textContent = 'Shareable link copied to clipboard.';
+      setStatus('Shareable link copied — paste it in chat.', 'ok');
     } catch (error) {
-      status.textContent = `Could not copy link: ${error.message}`;
+      setStatus(`Could not copy link: ${error.message}`, 'error');
     }
   });
 
-  status.textContent = 'Click Run search to load the embedding model.';
+  function activate() {
+    runKeyword(queryInput.value.trim()); // show keyword side immediately
+    setStatus('Press Search to rank by meaning (loads a 25 MB model once).', '');
+  }
+
+  return { activate };
 }

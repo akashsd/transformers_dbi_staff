@@ -1,96 +1,102 @@
 import { AutoTokenizer } from '@huggingface/transformers';
 
 const MODEL_ID = 'Xenova/gpt2';
+const PRESETS = ['strawberry', 'antidisestablishmentarianism', 'Weinerschnitzel 🌭'];
+
 let tokenizerPromise;
 
-function formatProgress(progress) {
-  const value = Number(progress?.progress ?? 0);
-  if (!Number.isFinite(value)) {
-    return 0;
-  }
-  return Math.max(0, Math.min(100, Math.round(value > 1 ? value : value * 100)));
-}
-
-async function getTokenizer(onProgress) {
+// Tokenization is pure JavaScript — this downloads a few small vocab files,
+// not the GPT-2 weights, and never touches the WASM runtime.
+function getTokenizer() {
   if (!tokenizerPromise) {
-    tokenizerPromise = AutoTokenizer.from_pretrained(MODEL_ID, {
-      progress_callback: onProgress,
-    });
+    tokenizerPromise = AutoTokenizer.from_pretrained(MODEL_ID);
   }
   return tokenizerPromise;
 }
 
-function renderTokens(tokens, root) {
-  root.innerHTML = '';
-  tokens.forEach((token, index) => {
-    const chip = document.createElement('span');
-    chip.className = `token-chip${index % 2 ? ' alt' : ''}`;
-    chip.textContent = token;
-    root.appendChild(chip);
-  });
+function renderTokens(root, tokens) {
+  root.replaceChildren(
+    ...tokens.map((token, index) => {
+      const chip = document.createElement('span');
+      chip.className = `chip${index % 2 ? ' chip-alt' : ''}`;
+      // GPT-2 marks a leading space with 'Ġ' — show it as a visible space
+      chip.textContent = token.replace(/Ġ/g, '␣');
+      return chip;
+    }),
+  );
 }
 
 export function renderTokenizerPanel(root) {
   root.innerHTML = `
     <div class="panel-head">
       <div>
-        <p class="eyebrow">Panel 1</p>
-        <h2>Tokenizer Playground</h2>
-        <p>Models do not see words the way people do. They see tokens.</p>
+        <span class="tag">Panel 1</span>
+        <h2>Tokenizer</h2>
+        <p class="lead">Models don't read words. They read <em>tokens</em> — chunks that often split mid-word.</p>
       </div>
-      <div class="status" data-status>Tokenizer loads on first use.</div>
     </div>
-    <div class="panel-grid">
-      <div class="card controls">
-        <label>
-          Try a sentence
-          <input type="text" data-input value="The officer filed a report because she was on duty." />
-        </label>
-        <div class="button-row">
-          <button data-preset="strawberry">strawberry</button>
-          <button data-preset="antidisestablishmentarianism">antidisestablishmentarianism</button>
-          <button data-preset="Weinerschnitzel 🌭">Weinerschnitzel 🌭</button>
-        </div>
-        <div class="hint"><strong>Try this:</strong> How many tokens is "strawberry"? Guess before you look.</div>
+    <div class="stack">
+      <label class="field">
+        <span class="field-label">Type anything</span>
+        <input type="text" data-input value="The officer filed a report because she was on duty." autocomplete="off" spellcheck="false" />
+      </label>
+      <div class="chips-row" data-presets>
+        <span class="chips-row-label">Try:</span>
+        ${PRESETS.map((p) => `<button type="button" class="pill" data-preset="${p}">${p}</button>`).join('')}
       </div>
-      <div class="card">
-        <div><strong data-counter>0 tokens · 0 characters</strong></div>
-        <div data-tokens></div>
+      <div class="readout">
+        <div class="metric"><strong data-count>—</strong><span>tokens</span></div>
+        <div class="metric"><strong data-chars>—</strong><span>characters</span></div>
+        <div class="status" data-status>Loading tokenizer…</div>
       </div>
+      <div class="token-wrap" data-tokens></div>
+      <p class="hint"><strong>Guess first:</strong> how many tokens is "strawberry"? Then click it above.</p>
     </div>
   `;
 
   const input = root.querySelector('[data-input]');
   const tokensTarget = root.querySelector('[data-tokens]');
-  const counter = root.querySelector('[data-counter]');
+  const count = root.querySelector('[data-count]');
+  const chars = root.querySelector('[data-chars]');
   const status = root.querySelector('[data-status]');
-  const presetButtons = root.querySelectorAll('[data-preset]');
+
+  let ready = false;
 
   async function update() {
-    status.textContent = 'Tokenizing...';
+    chars.textContent = String([...input.value].length);
+    if (!ready) {
+      return;
+    }
     try {
-      const tokenizer = await getTokenizer((progress) => {
-        if (progress?.status === 'progress') {
-          const percent = formatProgress(progress);
-          status.textContent = `Downloading tokenizer... ${percent}%`;
-        }
-      });
+      const tokenizer = await getTokenizer();
       const tokens = tokenizer.tokenize(input.value, { add_special_tokens: false });
-      renderTokens(tokens, tokensTarget);
-      counter.textContent = `${tokens.length} tokens · ${input.value.length} characters`;
-      status.textContent = 'Ready.';
+      renderTokens(tokensTarget, tokens);
+      count.textContent = String(tokens.length);
     } catch (error) {
-      status.textContent = `Tokenizer load failed: ${error.message}`;
+      status.textContent = `Could not tokenize: ${error.message}`;
     }
   }
 
-  input.addEventListener('input', update);
-  presetButtons.forEach((button) => {
+  root.querySelectorAll('[data-preset]').forEach((button) => {
     button.addEventListener('click', () => {
       input.value = button.dataset.preset;
       update();
+      input.focus();
     });
   });
+  input.addEventListener('input', update);
 
-  return { activate: update };
+  async function activate() {
+    chars.textContent = String([...input.value].length);
+    try {
+      await getTokenizer();
+      ready = true;
+      status.textContent = 'Ready — type to retokenize live.';
+      update();
+    } catch (error) {
+      status.textContent = `Tokenizer failed to load: ${error.message}`;
+    }
+  }
+
+  return { activate };
 }

@@ -18,7 +18,7 @@ These materials support the DBI extended-team transformers show-and-tell. The we
 
 ## During the Zoom
 
-Use the tokenizer panel to show that models see tokens, not words. Use the semantic search panel to show meaning-based retrieval over a synthetic corpus. Use the next-token panel to explain prediction and failure modes. Use the notebook links after the demo if people want to keep going.
+The webapp has two panels. Use the **Tokenizer** panel to show that models see tokens, not words — it runs instantly with no model download. Use the **Semantic Search** panel to show meaning-based retrieval over a synthetic corpus: search for an idea and watch it find documents that share none of your words, side by side with plain keyword search. Corpus embeddings are precomputed, so the only live model is a tiny 25 MB one that loads on your first search. Use the notebook links after the demo if people want to keep going.
 
 ## After the Zoom
 
