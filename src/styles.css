@@ -108,7 +108,7 @@ h1 {
   box-shadow: var(--shadow);
 }
 
-.panel-nav a {
+.panel-nav button {
   display: inline-flex;
   align-items: center;
   min-height: 40px;
@@ -119,12 +119,24 @@ h1 {
   color: var(--text);
   text-decoration: none;
   font-weight: 700;
+  font: inherit;
+  cursor: pointer;
 }
 
-.panel-nav a:hover,
-.panel-nav a:focus-visible {
+.panel-nav button:hover,
+.panel-nav button:focus-visible {
   background: rgba(77, 163, 255, 0.24);
   outline: none;
+}
+
+.panel-nav button.is-active {
+  background: var(--blue);
+  color: #001b3b;
+  border-color: var(--blue);
+}
+
+.panel[hidden] {
+  display: none;
 }
 
 .hero-note strong,
@@ -287,6 +299,45 @@ button:disabled {
 }
 
 .two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.corpus-details summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.corpus-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.corpus-details summary::after {
+  content: '+ browse';
+  color: var(--blue);
+  font-weight: 700;
+}
+
+.corpus-details[open] summary::after {
+  content: '- collapse';
+}
+
+.corpus-count {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.9rem;
+}
+
+.corpus-scroll {
+  max-height: 320px;
+  overflow-y: auto;
+  margin-top: 10px;
+  padding-right: 6px;
+}
 
 .attention-stage {
   position: relative;

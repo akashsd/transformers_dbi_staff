@@ -1,6 +1,4 @@
-import { AutoTokenizer, env } from '@huggingface/transformers';
-
-env.allowLocalModels = false;
+import { AutoTokenizer } from '@huggingface/transformers';
 
 const MODEL_ID = 'Xenova/gpt2';
 let tokenizerPromise;

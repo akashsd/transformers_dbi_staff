@@ -1,6 +1,4 @@
-import { AutoModelForCausalLM, AutoTokenizer, env } from '@huggingface/transformers';
-
-env.allowLocalModels = false;
+import { AutoModelForCausalLM, AutoTokenizer } from '@huggingface/transformers';
 
 const MODEL_ID = 'Xenova/gpt2';
 let tokenizerPromise;

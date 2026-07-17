@@ -1,6 +1,4 @@
-import { AutoModel, AutoTokenizer, env } from '@huggingface/transformers';
-
-env.allowLocalModels = false;
+import { AutoModel, AutoTokenizer } from '@huggingface/transformers';
 
 const MODEL_ID = 'Xenova/distilbert-base-uncased';
 let tokenizerPromise;

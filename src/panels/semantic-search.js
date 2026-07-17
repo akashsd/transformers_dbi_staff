@@ -1,7 +1,5 @@
-import { pipeline, env } from '@huggingface/transformers';
+import { pipeline } from '@huggingface/transformers';
 import { corpus } from '../corpus.js';
-
-env.allowLocalModels = false;
 
 const MODEL_ID = 'Xenova/all-MiniLM-L6-v2';
 let extractorPromise;
@@ -139,6 +137,24 @@ function renderCorpus(root) {
   }
 }
 
+function buildCorpusCard() {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <details class="corpus-details">
+      <summary>
+        <span>Corpus</span>
+        <span class="corpus-count">${corpus.length} synthetic service records &middot; click to browse</span>
+      </summary>
+      <p>Shared with Notebook 2. Scroll inside the list below &mdash; the page won't grow.</p>
+      <div class="corpus-scroll">
+        <div data-corpus class="result-list"></div>
+      </div>
+    </details>
+  `;
+  return card;
+}
+
 export function renderSemanticSearchPanel(root) {
   const defaultQuery = parseQueryFromUrl();
   root.innerHTML = `
@@ -162,17 +178,15 @@ export function renderSemanticSearchPanel(root) {
         </div>
         <div class="hint"><strong>Try this:</strong> Try a query that describes an idea using none of the words in the docs.</div>
       </div>
-      <div class="card">
-        <h3>Corpus</h3>
-        <p>40 synthetic service records. Shared with Notebook 2.</p>
-        <div data-corpus class="result-list"></div>
-      </div>
       <div class="two-col">
         <div data-keyword></div>
         <div data-semantic></div>
       </div>
     </div>
   `;
+
+  const layout = root.querySelector('.semantic-layout');
+  layout.insertBefore(buildCorpusCard(), layout.querySelector('.two-col'));
 
   const status = root.querySelector('[data-status]');
   const queryInput = root.querySelector('[data-query]');

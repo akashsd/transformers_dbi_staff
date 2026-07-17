@@ -1,3 +1,4 @@
+import './env.js';
 import './styles.css';
 import { renderTokenizerPanel } from './panels/tokenizer.js';
 import { renderAttentionPanel } from './panels/attention.js';
@@ -6,6 +7,13 @@ import { renderNextTokenPanel } from './panels/next-token.js';
 
 const app = document.querySelector('#app');
 const currentUrl = new URL(window.location.href);
+
+const panels = [
+  { id: 'tokenizer', label: 'Panel 1: Tokenizer' },
+  { id: 'attention', label: 'Panel 2: Attention' },
+  { id: 'semantic-search', label: 'Panel 3: Semantic Search' },
+  { id: 'next-token', label: 'Panel 4: Next Token' },
+];
 
 app.innerHTML = `
   <div class="page-shell">
@@ -21,16 +29,15 @@ app.innerHTML = `
       </div>
     </header>
     <nav class="panel-nav" aria-label="Panel navigation">
-      <a href="#panel-tokenizer" data-panel-nav>Panel 1: Tokenizer</a>
-      <a href="#panel-attention" data-panel-nav>Panel 2: Attention</a>
-      <a href="#panel-semantic-search" data-panel-nav>Panel 3: Semantic Search</a>
-      <a href="#panel-next-token" data-panel-nav>Panel 4: Next Token</a>
+      ${panels
+        .map(
+          (panel) =>
+            `<button type="button" data-panel-nav="${panel.id}">${panel.label}</button>`,
+        )
+        .join('')}
     </nav>
     <main class="panels">
-      <section class="panel" id="panel-tokenizer"></section>
-      <section class="panel" id="panel-attention"></section>
-      <section class="panel" id="panel-semantic-search"></section>
-      <section class="panel" id="panel-next-token"></section>
+      ${panels.map((panel) => `<section class="panel" id="panel-${panel.id}"></section>`).join('')}
     </main>
     <footer class="footer">
       <p>Built for DBI's transformers show-and-tell.</p>
@@ -44,15 +51,31 @@ renderAttentionPanel(document.querySelector('#panel-attention'));
 renderSemanticSearchPanel(document.querySelector('#panel-semantic-search'));
 renderNextTokenPanel(document.querySelector('#panel-next-token'));
 
-document.querySelectorAll('[data-panel-nav]').forEach((link) => {
-  link.addEventListener('click', (event) => {
-    const targetId = link.getAttribute('href')?.slice(1);
-    const target = targetId ? document.getElementById(targetId) : null;
-    if (!target) {
-      return;
-    }
+const navButtons = [...document.querySelectorAll('[data-panel-nav]')];
+const panelSections = new Map(panels.map((panel) => [panel.id, document.getElementById(`panel-${panel.id}`)]));
 
-    event.preventDefault();
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+function showPanel(id, { updateHash = true } = {}) {
+  const targetId = panelSections.has(id) ? id : panels[0].id;
+
+  panelSections.forEach((section, sectionId) => {
+    section.hidden = sectionId !== targetId;
   });
+  navButtons.forEach((button) => {
+    button.classList.toggle('is-active', button.dataset.panelNav === targetId);
+  });
+
+  if (updateHash) {
+    const url = new URL(window.location.href);
+    url.hash = targetId;
+    window.history.replaceState({}, '', url);
+  }
+
+  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+}
+
+navButtons.forEach((button) => {
+  button.addEventListener('click', () => showPanel(button.dataset.panelNav));
 });
+
+const initialPanel = currentUrl.hash.slice(1) || (currentUrl.searchParams.has('q') ? 'semantic-search' : panels[0].id);
+showPanel(initialPanel, { updateHash: false });
