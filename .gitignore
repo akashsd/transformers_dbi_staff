@@ -5,3 +5,8 @@ dist/
 *.log
 .claude/
 *.pptx
+
+# Internal planning doc and maintainer-only content generation scripts —
+# not needed to run the website, notebooks, or Colab. Kept locally only.
+dbi_transformers_spec.md
+tools/

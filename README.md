@@ -1,6 +1,6 @@
 # DBI Transformers Demo
 
-Interactive follow-along material for the DBI Staff transformers session: a browser demo, three Colab notebooks, and the slide deck cue badges.
+Interactive follow-along material for the DBI Staff transformers session: a browser demo and three Colab notebooks.
 
 ## Open the webapp
 
@@ -12,21 +12,27 @@ Interactive follow-along material for the DBI Staff transformers session: a brow
 [![Open Notebook 2](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/akashsd/transformers_dbi_staff/blob/main/notebooks/02_semantic_search_toy_corpus.ipynb)
 [![Open Notebook 3](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/akashsd/transformers_dbi_staff/blob/main/notebooks/03_bring_your_own_data.ipynb)
 
+Prefer to run locally instead of Colab? Download any notebook from [`notebooks/`](notebooks/) (or clone this repo) and open it with Jupyter. Each notebook's first cell installs its own dependencies (`pip install ...`), and notebook 2 pulls the shared corpus straight from GitHub if it isn't found on disk — so a single downloaded `.ipynb` file runs standalone, no other files required.
+
 ## What is this?
 
 These materials support the DBI Staff transformers session. The webapp is for live Zoom interaction, and the notebooks are the follow-on path for people who want to try the ideas themselves. Everything here is synthetic or public data only.
 
-## During the Zoom
+## Webapp structure
 
-The webapp has four panels, and the page opens instantly — nothing downloads a model on load.
+It has four panels, and the page opens instantly — nothing downloads a model on load:
 
 - **Tokenizer** (live, pure JavaScript): type anything and watch it split into tokens in real time.
 - **Attention**: an illustrative schematic showing how a word like "she" ties back to "officer." Click a word to see where it looks. Preset sentences only — no live model.
-- **Semantic Search** (the star): search a synthetic corpus by meaning and watch it beat plain keyword search on paraphrased queries. Corpus embeddings are precomputed; only your typed query runs a tiny 25 MB model, loaded on your first search.
+- **Semantic Search** (the star): search a synthetic corpus of 911-call summaries from a FIFA World Cup event by meaning, and watch it beat plain keyword search on paraphrased queries. Corpus embeddings are precomputed; only your typed query runs a tiny 25 MB model, loaded on your first search.
 - **Next Token**: real GPT-2 predictions, captured once and frozen, including a confidently-wrong hallucination (the Dallas Cowboys Super Bowl year). Preset prompts only.
 
-Only Semantic Search ever downloads a model, and only when you press Search. Use the notebook links after the demo if people want to keep going.
+Only Semantic Search ever downloads a model, and only when you press Search.
 
-## After the Zoom
+## Colab notebooks
 
-Notebook 1 introduces embeddings and cosine similarity. Notebook 2 builds semantic search over the shared toy corpus. Notebook 3 shows how to bring your own CSV into an embedding workflow.
+Notebook 1 introduces embeddings and cosine similarity. Notebook 2 builds semantic search over the shared corpus. Notebook 3 shows how to bring your own CSV into an embedding workflow.
+
+## Repo contents
+
+This repo holds only what's needed to run the webapp (`index.html`, `src/`, `vite.config.js`, `package.json`) and its built GitHub Pages output (`docs/`), plus the shared corpus (`data/corpus.txt`) and the three notebooks (`notebooks/`).

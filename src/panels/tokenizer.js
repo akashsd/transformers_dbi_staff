@@ -38,7 +38,7 @@ export function renderTokenizerPanel(root) {
     <div class="stack">
       <label class="field">
         <span class="field-label">Type anything</span>
-        <input type="text" data-input value="The officer filed a report because she was on duty." autocomplete="off" spellcheck="false" />
+        <input type="text" data-input value="Caller reports a fight breaking out between rival fans outside the stadium gates." autocomplete="off" spellcheck="false" />
       </label>
       <div class="chips-row" data-presets>
         <span class="chips-row-label">Try:</span>

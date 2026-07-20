@@ -4,7 +4,7 @@ import embeddings from '../corpus-embeddings.json';
 
 const MODEL_ID = 'Xenova/all-MiniLM-L6-v2';
 const DTYPE = 'q8'; // must match the dtype used to precompute embeddings
-const DEFAULT_QUERY = 'traffic stop near downtown';
+const DEFAULT_QUERY = 'fans fighting outside the stadium';
 
 const docVectors = embeddings.vectors;
 let extractorPromise;
@@ -30,11 +30,20 @@ function dot(a, b) {
   return sum;
 }
 
+// Common function words excluded so keyword matching/highlighting reflects
+// meaningful terms, not incidental overlap on "a", "the", "for", etc.
+const STOPWORDS = new Set([
+  'a', 'an', 'the', 'and', 'or', 'but', 'is', 'was', 'were', 'be', 'been', 'being',
+  'to', 'of', 'in', 'on', 'at', 'by', 'for', 'from', 'with', 'without', 'after',
+  'before', 'into', 'near', 'out', 'up', 'down', 'over', 'under', 'their', 'its',
+  'it', 'this', 'that', 'my', 'your', 'i', 'we', 'they', 'he', 'she',
+]);
+
 function tokenize(text) {
   return text
     .toLowerCase()
     .split(/[^a-z0-9]+/)
-    .filter(Boolean);
+    .filter((word) => word && !STOPWORDS.has(word));
 }
 
 function keywordScore(terms, text) {
@@ -57,7 +66,7 @@ function highlight(text, terms) {
     frag.append(text);
     return frag;
   }
-  const pattern = new RegExp(`(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+  const pattern = new RegExp(`\\b(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`, 'gi');
   let last = 0;
   for (const match of text.matchAll(pattern)) {
     const start = match.index;
@@ -123,7 +132,7 @@ export function renderSemanticSearchPanel(root) {
     </div>
     <div class="stack">
       <label class="field">
-        <span class="field-label">Search 40 synthetic city service records</span>
+        <span class="field-label">Search 40 synthetic 911-call summaries from a FIFA World Cup event</span>
         <div class="field-row">
           <input type="text" data-query autocomplete="off" spellcheck="false" />
           <button type="button" data-run>Search</button>
@@ -147,7 +156,7 @@ export function renderSemanticSearchPanel(root) {
           ${corpus.map((doc, i) => `<div class="corpus-item"><span>${i + 1}</span>${doc}</div>`).join('')}
         </div>
       </details>
-      <p class="hint"><strong>Try this:</strong> describe a situation without using any word that appears in the docs — e.g. "someone took my bike."</p>
+      <p class="hint"><strong>Try this:</strong> describe a situation without using any word that appears in the docs — e.g. "a visitor grew faint from being overheated for hours."</p>
     </div>
   `;
 
