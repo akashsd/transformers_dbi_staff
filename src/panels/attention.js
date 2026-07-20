@@ -33,7 +33,7 @@ export function renderAttentionPanel(root) {
       <div>
         <span class="tag">Panel 2</span>
         <h2>Attention</h2>
-        <p class="lead">Every token can look at every other token. That's how "she" gets tied back to "officer". Click a word to see where it looks.</p>
+        <p class="lead">Every token can look at every other token. That's how "he" gets tied back to "supporter". Click a word to see where it looks.</p>
       </div>
     </div>
     <div class="stack">
